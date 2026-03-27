@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>EcoGuardian Drone | Marine Pollution Response System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #0a1428;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            width: 1400px;
+            max-width: 95vw;
+            height: 85vh;
+            min-height: 700px;
+            background: #0f212e;
+            border-radius: 32px;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ========== HOME SCREEN WITH MARINE SLIDESHOW ========== */
+        .home-screen {
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .slideshow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        .slide.active {
+            opacity: 1;
+        }
+        
+        .home-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,20,40,0.5), rgba(0,0,0,0.6));
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .start-card {
+            background: rgba(12, 28, 38, 0.88);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 32px 64px;
+            border: 1px solid rgba(80, 180, 220, 0.7);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            z-index: 20;
+            text-align: center;
+        }
+
+        .start-btn {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e6f8f, #0a4b6e);
+            border: none;
+            padding: 18px 48px;
+            border-radius: 56px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-family: inherit;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.02);
+            background: linear-gradient(135deg, #2a86aa, #0e5a80);
+            box-shadow: 0 0 18px rgba(0,200,255,0.5);
+        }
+
+        /* ========== SIDE-VIEW MISSION SCREEN ========== */
+        .mission-screen {
+            background: linear-gradient(180deg, #7bc4e0 0%, #4f9bc0 30%, #2b6f8f 60%, #1c4d64 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 30%;
+            background: linear-gradient(180deg, #c2e0f0, #9ac8e0);
+            z-index: 0;
+        }
+
+        .sea-area {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 68%;
+            height: 70%;
+            background: linear-gradient(135deg, #3b9fd6, #1f6d96);
+            z-index: 1;
+            border-radius: 0 40px 0 0;
+            box-shadow: inset 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .beach-area-side {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 32%;
+            height: 70%;
+            background: linear-gradient(135deg, #f2e0b0, #d4b87a);
+            z-index: 2;
+            border-radius: 40px 0 0 0;
+            box-shadow: inset -5px 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .beach-area-side::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 20% 30%, #c2a156 2px, transparent 2px);
+            background-size: 28px 28px;
+            opacity: 0.6;
+        }
+        
+        .waves {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 68%;
+            height: 25px;
+            background: repeating-linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0.5) 40px, rgba(255,255,240,0.3) 40px, rgba(255,255,240,0.3) 80px);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Marine Life */
+        .marine-life {
+            position: absolute;
+            z-index: 8;
+            pointer-events: none;
+            font-size: 28px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            animation: swim 8s infinite ease-in-out;
+        }
+        
+        @keyframes swim {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(15px) translateY(-8px); }
+        }
+        
+        /* Beach People */
+        .beach-person {
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        /* Pollution particles */
+        .pollution-particle {
+            position: absolute;
+            z-index: 20;
+            transition: all 0.2s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .surface-pollution {
+            background: radial-gradient(circle at 30% 30%, #5d4a2e, #2f2418);
+            width: 22px;
+            height: 18px;
+            border-radius: 40% 60% 50% 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            border: 1px solid #856e48;
+        }
+
+        .underwater-pollution {
+            background: radial-gradient(ellipse at 40% 50%, #4a6e3c, #2b4520);
+            width: 24px;
+            height: 20px;
+            border-radius: 50% 45% 55% 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            border: 1px solid #6d944a;
+        }
+
+        /* Drone */
+        .drone-entity {
+            position: absolute;
+            width: 100px;
+            height: 80px;
+            z-index: 60;
+            transition: all 0.5s cubic-bezier(0.34, 1.1, 0.55, 1);
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
+            pointer-events: none;
+        }
+        
+        .drone-main {
+            position: absolute;
+            width: 48px;
+            height: 32px;
+            background: linear-gradient(145deg, #4a6e8c, #2c4a68);
+            border-radius: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 1px solid #7aa9cc;
+            z-index: 2;
+        }
+        
+        .drone-main::before {
+            content: "⚙";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #e0f0ff;
+        }
+        
+        .wing {
+            position: absolute;
+            width: 32px;
+            height: 12px;
+            background: linear-gradient(135deg, #6c8eae, #3a5a7a);
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .wing-left { left: -28px; top: 50%; transform: translateY(-50%); }
+        .wing-right { right: -28px; top: 50%; transform: translateY(-50%); }
+        .wing-front { top: -18px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle, #8aaece, #4a6e8e); }
+        .wing-back { bottom: -18px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle, #8aaece, #4a6e8e); }
+        
+        .wing-front::after, .wing-back::after {
+            content: "✈";
+            position: absolute;
+            font-size: 14px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffd966;
+        }
+        
+        .drone-entity.diving-mode .wing { display: none; }
+        .drone-entity.diving-mode .drone-main {
+            background: linear-gradient(145deg, #2c6e8c, #1a4a68);
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+        }
+        .drone-entity.diving-mode .drone-main::before { content: "🌀"; font-size: 24px; }
+
+        /* PILOT PANEL - Top of screen */
+        .pilot-panel {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 320px;
+            background: rgba(0, 15, 25, 0.92);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 14px 18px;
+            z-index: 90;
+            border: 1px solid rgba(80, 200, 255, 0.5);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            pointer-events: none;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .pilot-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(80, 180, 220, 0.4);
+            padding-bottom: 8px;
+        }
+        
+        .pilot-avatar {
+            font-size: 42px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .pilot-info {
+            flex: 1;
+        }
+        
+        .pilot-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #aaffdd;
+            letter-spacing: 1px;
+        }
+        
+        .pilot-rank {
+            font-size: 0.7rem;
+            color: #7fc9ff;
+        }
+        
+        .comms-log {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            color: #c0f0ff;
+            padding-right: 5px;
+            scrollbar-width: thin;
+        }
+        
+        .comms-log::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .comms-log::-webkit-scrollbar-track {
+            background: #0a2a3a;
+            border-radius: 4px;
+        }
+        
+        .comms-log::-webkit-scrollbar-thumb {
+            background: #2bc0ff;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(80, 180, 220, 0.2);
+            font-family: monospace;
+            line-height: 1.3;
+        }
+        
+        .log-time {
+            color: #ffaa66;
+            font-weight: bold;
+        }
+        
+        .log-message {
+            color: #b8e2ff;
+        }
+        
+        .drone-status-badge {
+            display: inline-block;
+            background: #1e5a7a;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.65rem;
+            margin-top: 8px;
+            color: #aaffdd;
+        }
+
+        /* Command panel */
+        .command-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(8, 20, 28, 0.95);
+            backdrop-filter: blur(18px);
+            border-radius: 56px;
+            padding: 16px 24px;
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            z-index: 100;
+            border: 1px solid rgba(70, 170, 210, 0.7);
+            flex-wrap: wrap;
+        }
+
+        .cmd-btn {
+            background: linear-gradient(135deg, #1e6a8f, #0f4b6e);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 44px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cmd-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .cmd-btn.red-leave { background: linear-gradient(135deg, #9e2a2a, #6e1a1a); }
+        .status-text {
+            background: #041a24e0;
+            padding: 8px 20px;
+            border-radius: 44px;
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #b9f3ff;
+            border-left: 3px solid #2bc0ff;
+        }
+        
+        .progress-feedback {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 10px 18px;
+            border-radius: 32px;
+            font-size: 0.85rem;
+            color: #e0f0ff;
+            font-family: monospace;
+            z-index: 70;
+            border: 1px solid #4faacc;
+            pointer-events: none;
+        }
+
+        /* Thanks screen with marine slideshow */
+        .thanks-screen {
+            position: relative;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .thanks-slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .thanks-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        .thanks-slide.active {
+            opacity: 1;
+        }
+        
+        .thanks-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,20,40,0.7));
+            z-index: 1;
+        }
+
+        .thanks-content {
+            background: rgba(5, 20, 28, 0.88);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 48px 56px;
+            max-width: 75%;
+            border: 1px solid rgba(80, 180, 220, 0.6);
+            z-index: 10;
+            text-align: center;
+            position: relative;
+        }
+
+        .thanks-title { font-size: 2rem; font-weight: 700; margin-bottom: 24px; color: #eef5ff; }
+        .appreciation-text { font-size: 1rem; margin: 20px 0; line-height: 1.6; color: #d4ecff; }
+        .home-redirect {
+            background: linear-gradient(135deg, #2c7a9e, #165a7a);
+            border: none;
+            padding: 12px 42px;
+            border-radius: 48px;
+            margin-top: 28px;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 800px) {
+            .cmd-btn { padding: 6px 12px; font-size: 0.7rem;}
+            .drone-entity { transform: scale(0.7);}
+            .thanks-content { padding: 24px 28px; max-width: 90%;}
+            .start-btn { font-size: 1.2rem; padding: 12px 28px;}
+            .pilot-panel { width: 260px; top: 10px; right: 10px; padding: 8px 12px; }
+            .comms-log { max-height: 120px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <!-- HOME SCREEN with MARINE SLIDESHOW -->
+    <div id="homeScreen" class="screen home-screen">
+        <div class="slideshow-container" id="homeSlideshow">
+            <div class="slide" style="background-image: url('https://images.pexels.com/photos/932638/pexels-photo-932638.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="slide" style="background-image: url('https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="slide" style="background-image: url('https://images.pexels.com/photos/1903702/pexels-photo-1903702.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="slide" style="background-image: url('https://images.pexels.com/photos/158063/bora-bora-french-polynesia-south-pacific-ocean-pacific-158063.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="slide" style="background-image: url('https://images.pexels.com/photos/1271619/pexels-photo-1271619.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+        </div>
+        <div class="start-card">
+            <button id="startMissionBtn" class="start-btn">🚁 INITIATE MISSION →</button>
+        </div>
+        <div style="position: absolute; bottom: 20px; left: 20px; font-size: 0.7rem; color: rgba(255,240,210,0.9); z-index: 20;">AUTONOMOUS MARINE FLEET | PROTECTING OUR OCEANS</div>
+    </div>
+
+    <!-- MISSION SCREEN with PILOT PANEL -->
+    <div id="missionScreen" class="screen mission-screen hidden">
+        <div class="sky"></div>
+        <div class="sea-area"></div>
+        <div class="beach-area-side"></div>
+        <div class="waves"></div>
+        
+        <!-- Marine Life -->
+        <div id="marineLifeContainer"></div>
+        <!-- Beach People -->
+        <div id="beachPeopleContainer"></div>
+        
+        <div id="surfacePollutionContainer"></div>
+        <div id="underwaterPollutionContainer"></div>
+        
+        <div id="droneEntity" class="drone-entity" style="left: 30%; top: 35%;">
+            <div class="wing wing-left"></div>
+            <div class="wing wing-right"></div>
+            <div class="wing wing-front"></div>
+            <div class="wing wing-back"></div>
+            <div class="drone-main"></div>
+        </div>
+        
+        <!-- PILOT PANEL with comms -->
+        <div class="pilot-panel" id="pilotPanel">
+            <div class="pilot-header">
+                <div class="pilot-avatar">👨‍✈️</div>
+                <div class="pilot-info">
+                    <div class="pilot-name">CAPT. MARINE CONTROL</div>
+                    <div class="pilot-rank">EcoGuardian Command</div>
+                </div>
+                <div class="drone-status-badge" id="droneCommStatus">DRONE: ONLINE</div>
+            </div>
+            <div class="comms-log" id="commsLog">
+                <div class="log-entry"><span class="log-time">[--:--:--]</span> <span class="log-message">📡 System ready. Awaiting deployment.</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-feedback" id="progressFeedback">🌊 System Ready • Click pollution to collect</div>
+        
+        <div class="command-panel">
+            <button id="cleanSurfaceBtn" class="cmd-btn">🌊 AUTO-SCAN SURFACE WASTE</button>
+            <button id="cleanUnderwaterBtn" class="cmd-btn">💧 AUTO-SCAN UNDERWATER DEBRIS</button>
+            <div class="status-text" id="missionStatus">🟢 FLIGHT MODE • Wings Deployed</div>
+            <button id="leaveMissionBtn" class="cmd-btn red-leave">🔴 ABORT MISSION</button>
+        </div>
+    </div>
+
+    <!-- THANKS SCREEN with MARINE SLIDESHOW -->
+    <div id="thanksScreen" class="screen thanks-screen hidden">
+        <div class="thanks-slideshow" id="thanksSlideshow">
+            <div class="thanks-slide" style="background-image: url('https://images.pexels.com/photos/1001682/pexels-photo-1001682.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="thanks-slide" style="background-image: url('https://images.pexels.com/photos/3214976/pexels-photo-3214976.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="thanks-slide" style="background-image: url('https://images.pexels.com/photos/2072165/pexels-photo-2072165.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+            <div class="thanks-slide" style="background-image: url('https://images.pexels.com/photos/847393/pexels-photo-847393.jpeg?auto=compress&cs=tinysrgb&w=1600');"></div>
+        </div>
+        <div class="thanks-content">
+            <div class="thanks-title">🌊 AUTONOMOUS ANTI-POLLUTION DRONE FLEET</div>
+            <div class="appreciation-text">
+                Powered by advanced AI and marine robotics, our fleet of adaptive drones continuously patrols coastlines, harbors, and open waters.<br><br>
+                ✦ <strong>Environmental Impact</strong> ✦<br>
+                Each mission removes up to 98% of surface microplastics and submerged waste, preventing ecosystem collapse. Real-time sonar mapping identifies pollution hotspots, while our modular drones transition between aerial and underwater modes seamlessly.<br><br>
+                🌍 <em>“Preserving marine biodiversity for future generations — one cleanup operation at a time.”</em><br><br>
+                This project represents the synergy of engineering and conservation.
+            </div>
+            <button id="homeFromThanksBtn" class="home-redirect">🏠 RETURN TO COMMAND CENTER</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Game State
+    let surfacePollutants = [];
+    let underwaterPollutants = [];
+    let droneState = "flying";
+    let isProcessing = false;
+    let isFlyingToPollution = false;
+    
+    const droneElement = document.getElementById('droneEntity');
+    const surfaceContainer = document.getElementById('surfacePollutionContainer');
+    const underwaterContainer = document.getElementById('underwaterPollutionContainer');
+    const marineLifeContainer = document.getElementById('marineLifeContainer');
+    const beachPeopleContainer = document.getElementById('beachPeopleContainer');
+    const missionStatusSpan = document.getElementById('missionStatus');
+    const progressFeedback = document.getElementById('progressFeedback');
+    const commsLog = document.getElementById('commsLog');
+    
+    // Helper: Add message to pilot comms log
+    function addPilotMessage(message, type = 'info') {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        const icon = type === 'warning' ? '⚠️' : (type === 'success' ? '✅' : '📡');
+        logEntry.innerHTML = `<span class="log-time">[${timeStr}]</span> <span class="log-message">${icon} ${message}</span>`;
+        commsLog.appendChild(logEntry);
+        logEntry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Keep last 25 messages
+        while (commsLog.children.length > 28) {
+            commsLog.removeChild(commsLog.firstChild);
+        }
+    }
+    
+    // Get drone position as readable location
+    function getDroneLocation() {
+        const left = parseFloat(droneElement.style.left);
+        const top = parseFloat(droneElement.style.top);
+        let zone = '';
+        if (droneState === 'flying') {
+            if (left < 45) zone = 'Western Sea Sector • Near Shore';
+            else if (left < 65) zone = 'Central Bay • Open Water';
+            else zone = 'Eastern Reef • Coastal Zone';
+        } else {
+            if (left < 40) zone = 'Submerged Reef • Depth 8-12m';
+            else if (left < 60) zone = 'Seagrass Meadow • Depth 6-10m';
+            else zone = 'Underwater Canyon • Depth 12-18m';
+        }
+        return `${zone} | POS: ${Math.round(left)}% H, ${Math.round(top)}% V`;
+    }
+    
+    // Send pollution report to pilot
+    function sendPollutionReport(type, count, action = 'scan') {
+        const location = getDroneLocation();
+        if (action === 'scan') {
+            addPilotMessage(`🔍 SCAN REPORT: ${count} ${type} pollution items detected at ${location}`);
+        } else if (action === 'collect_start') {
+            addPilotMessage(`🤖 DEPLOYING COLLECTOR: Approaching ${type} waste at ${location}`);
+        } else if (action === 'collect_complete') {
+            addPilotMessage(`✨ COLLECTION SUCCESS: ${type} pollutant neutralized. Remaining: ${count}`, 'success');
+        }
+    }
+    
+    // Send drone status update
+    function sendDroneStatusUpdate() {
+        const mode = droneState === 'flying' ? 'FLIGHT MODE • Wings Deployed' : 'DIVING MODE • Aquatic Propulsion';
+        const status = droneState === 'flying' ? '✈️ Aerial patrol active' : '💧 Underwater navigation active';
+        addPilotMessage(`🛸 DRONE STATUS: ${mode} | ${status} | Location: ${getDroneLocation()}`);
+    }
+    
+    // Add marine life
+    function addMarineLife() {
+        const marineCreatures = ['🐠', '🐟', '🐡', '🐙', '🦑', '🐬', '🐳', '🦀', '🐚', '⭐', '🐢', '🐋'];
+        for (let i = 0; i < 14; i++) {
+            const creature = document.createElement('div');
+            creature.className = 'marine-life';
+            creature.textContent = marineCreatures[Math.floor(Math.random() * marineCreatures.length)];
+            creature.style.left = (5 + Math.random() * 60) + '%';
+            creature.style.bottom = (15 + Math.random() * 48) + '%';
+            creature.style.fontSize = (20 + Math.random() * 15) + 'px';
+            creature.style.animationDuration = (6 + Math.random() * 6) + 's';
+            creature.style.animationDelay = (Math.random() * 5) + 's';
+            marineLifeContainer.appendChild(creature);
+        }
+    }
+    
+    // Add beach people
+    function addBeachPeople() {
+        const people = ['👨‍👩‍👧', '🏄‍♂️', '🏖️', '👧', '👴', '🧑‍🤝‍🧑', '👒', '⛱️', '🏐', '🧘‍♀️', '🚶‍♂️', '🐕'];
+        for (let i = 0; i < 10; i++) {
+            const person = document.createElement('div');
+            person.className = 'beach-person';
+            person.textContent = people[Math.floor(Math.random() * people.length)];
+            person.style.right = (5 + Math.random() * 25) + '%';
+            person.style.bottom = (10 + Math.random() * 52) + '%';
+            person.style.fontSize = (22 + Math.random() * 12) + 'px';
+            beachPeopleContainer.appendChild(person);
+        }
+    }
+    
+    // Generate pollution
+    function generatePollutants() {
+        surfaceContainer.innerHTML = '';
+        surfacePollutants = [];
+        const surfaceCount = 12;
+        for (let i = 0; i < surfaceCount; i++) {
+            let left = 8 + Math.random() * 55;
+            let top = 45 + Math.random() * 38;
+            if (Math.random() > 0.65) {
+                left = 72 + Math.random() * 23;
+                top = 55 + Math.random() * 32;
+            }
+            const div = document.createElement('div');
+            div.className = 'pollution-particle surface-pollution';
+            div.style.left = left + '%';
+            div.style.top = top + '%';
+            div.style.position = 'absolute';
+            div.onclick = (e) => {
+                e.stopPropagation();
+                if (!isProcessing && droneState === 'flying') {
+                    flyToAndCollect(div, 'surface');
+                } else if (droneState !== 'flying') {
+                    addPilotMessage(`⚠️ Cannot collect surface waste - drone in ${droneState} mode`, 'warning');
+                    progressFeedback.innerText = '⚠️ Switch to flight mode to collect surface pollution';
+                }
+            };
+            surfaceContainer.appendChild(div);
+            surfacePollutants.push({ id: i, element: div, left, top });
+        }
+        
+        underwaterContainer.innerHTML = '';
+        underwaterPollutants = [];
+        const waterCount = 10;
+        for (let i = 0; i < waterCount; i++) {
+            const left = 10 + Math.random() * 52;
+            const top = 68 + Math.random() * 26;
+            const div = document.createElement('div');
+            div.className = 'pollution-particle underwater-pollution';
+            div.style.left = left + '%';
+            div.style.top = top + '%';
+            div.style.position = 'absolute';
+            div.onclick = (e) => {
+                e.stopPropagation();
+                if (!isProcessing && droneState === 'diving') {
+                    flyToAndCollect(div, 'underwater');
+                } else if (droneState !== 'diving') {
+                    addPilotMessage(`⚠️ Cannot collect underwater debris - drone in ${droneState} mode`, 'warning');
+                    progressFeedback.innerText = '⚠️ Dive underwater first to collect debris';
+                }
+            };
+            underwaterContainer.appendChild(div);
+            underwaterPollutants.push({ id: i, element: div, left, top });
+        }
+        
+        addPilotMessage(`🌊 INITIAL SCAN: ${surfaceCount} surface pollutants + ${waterCount} underwater debris detected in operational zone.`);
+    }
+    
+    // Fly drone to pollution
+    async function flyToAndCollect(pollutionElement, type) {
+        if (isFlyingToPollution) return;
+        isFlyingToPollution = true;
+        isProcessing = true;
+        
+        const targetLeft = pollutionElement.style.left;
+        const targetTop = pollutionElement.style.top;
+        const startLeft = droneElement.style.left;
+        const startTop = droneElement.style.top;
+        
+        sendPollutionReport(type, 1, 'collect_start');
+        progressFeedback.innerText = `✈️ Drone en route to collect ${type} waste...`;
+        
+        const steps = 18;
+        for (let i = 0; i <= steps; i++) {
+            const progress = i / steps;
+            const newLeft = parseFloat(startLeft) + (parseFloat(targetLeft) - parseFloat(startLeft)) * progress;
+            const newTop = parseFloat(startTop) + (parseFloat(targetTop) - parseFloat(startTop)) * progress;
+            droneElement.style.left = newLeft + '%';
+            droneElement.style.top = newTop + '%';
+            await delay(20);
+        }
+        
+        if (type === 'surface') {
+            const index = surfacePollutants.findIndex(p => p.element === pollutionElement);
+            if (index !== -1) {
+                pollutionElement.style.transform = 'scale(0)';
+                pollutionElement.style.opacity = '0';
+                await delay(150);
+                pollutionElement.remove();
+                surfacePollutants.splice(index, 1);
+                addPilotMessage(`🗑️ SURFACE WASTE COLLECTED at ${getDroneLocation()} | ${surfacePollutants.length} remaining`);
+                progressFeedback.innerText = `✅ Surface waste collected! ${surfacePollutants.length} remaining`;
+                missionStatusSpan.innerHTML = `🌿 Collected • ${surfacePollutants.length} left`;
+            }
+        } else {
+            const index = underwaterPollutants.findIndex(p => p.element === pollutionElement);
+            if (index !== -1) {
+                pollutionElement.style.transform = 'scale(0)';
+                pollutionElement.style.opacity = '0';
+                await delay(150);
+                pollutionElement.remove();
+                underwaterPollutants.splice(index, 1);
+                addPilotMessage(`🗑️ UNDERWATER DEBRIS EXTRACTED at ${getDroneLocation()} | ${underwaterPollutants.length} remaining`);
+                progressFeedback.innerText = `✅ Underwater debris collected! ${underwaterPollutants.length} remaining`;
+                missionStatusSpan.innerHTML = `💧 Collected • ${underwaterPollutants.length} left`;
+            }
+        }
+        
+        const homeLeft = droneState === 'flying' ? '30%' : '32%';
+        const homeTop = droneState === 'flying' ? '35%' : '72%';
+        for (let i = 0; i <= 12; i++) {
+            const progress = i / 12;
+            const newLeft = parseFloat(droneElement.style.left) + (parseFloat(homeLeft) - parseFloat(droneElement.style.left)) * progress;
+            const newTop = parseFloat(droneElement.style.top) + (parseFloat(homeTop) - parseFloat(droneElement.style.top)) * progress;
+            droneElement.style.left = newLeft + '%';
+            droneElement.style.top = newTop + '%';
+            await delay(18);
+        }
+        
+        isProcessing = false;
+        isFlyingToPollution = false;
+        
+        if ((type === 'surface' && surfacePollutants.length === 0) || 
+            (type === 'underwater' && underwaterPollutants.length === 0)) {
+            addPilotMessage(`🎉 MISSION MILESTONE: ${type} area fully restored! Marine life returning.`, 'success');
+            progressFeedback.innerText = '🎉 Area fully cleaned! Marine life thanks you!';
+        }
+    }
+    
+    async function autoScanAndClean(type) {
+        if (isProcessing) {
+            addPilotMessage(`⏳ System busy - previous operation in progress`, 'warning');
+            return;
+        }
+        if (type === 'surface' && droneState !== 'flying') {
+            addPilotMessage(`⚠️ Cannot initiate surface scan - drone in ${droneState} mode`, 'warning');
+            return;
+        }
+        if (type === 'underwater' && droneState !== 'diving') {
+            addPilotMessage(`⚠️ Cannot initiate underwater scan - drone in ${droneState} mode`, 'warning');
+            return;
+        }
+        
+        const pollutants = type === 'surface' ? [...surfacePollutants] : [...underwaterPollutants];
+        if (pollutants.length === 0) {
+            addPilotMessage(`✨ ${type === 'surface' ? 'Surface' : 'Underwater'} zone already pristine - no action needed`, 'success');
+            return;
+        }
+        
+        addPilotMessage(`🔍 AUTO-SCAN INITIATED: ${pollutants.length} ${type} pollutants located at various coordinates. Deploying cleanup protocol.`);
+        progressFeedback.innerText = `🔍 Auto-scanning ${pollutants.length} ${type} pollutants...`;
+        missionStatusSpan.innerHTML = `🤖 AUTO-COLLECTING ${pollutants.length} ITEMS`;
+        
+        for (const poll of pollutants) {
+            if (poll && poll.element && poll.element.parentNode) {
+                await flyToAndCollect(poll.element, type);
+                await delay(180);
+            }
+        }
+        
+        addPilotMessage(`✅ AUTO-CLEANUP COMPLETE: ${type === 'surface' ? 'Surface' : 'Underwater'} zone restored. Total removed: ${pollutants.length}`, 'success');
+        progressFeedback.innerText = `✅ ${type === 'surface' ? 'Surface' : 'Underwater'} cleanup complete!`;
+        missionStatusSpan.innerHTML = droneState === 'flying' ? '🟢 FLIGHT MODE • Ready' : '🔵 DIVING MODE • Ready';
+    }
+    
+    function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+    
+    async function toggleToUnderwater() {
+        if (isProcessing) { addPilotMessage(`⏳ Cannot dive - operation in progress`, 'warning'); return; }
+        if (droneState === 'flying') {
+            isProcessing = true;
+            addPilotMessage(`💧 DIVE SEQUENCE INITIATED: Retracting wings, activating aquatic propulsion. Target depth: 8-12m`);
+            progressFeedback.innerText = '💧 Drone diving • Retracting wings...';
+            missionStatusSpan.innerHTML = '⬇️ DIVING MODE • Wings retracted';
+            droneState = 'diving';
+            droneElement.classList.add('diving-mode');
+            droneElement.style.left = '32%';
+            droneElement.style.top = '72%';
+            await delay(800);
+            addPilotMessage(`🌊 UNDERWATER MODE ACTIVE: Sonar online. ${underwaterPollutants.length} debris items detected at ${getDroneLocation()}`);
+            progressFeedback.innerText = '🌊 Underwater mode active • Click debris to collect';
+            isProcessing = false;
+        }
+    }
+    
+    async function toggleToFlying() {
+        if (isProcessing) { addPilotMessage(`⏳ Cannot ascend - operation in progress`, 'warning'); return; }
+        if (droneState === 'diving') {
+            isProcessing = true;
+            addPilotMessage(`⬆️ ASCENDING: Deploying wings, switching to aerial mode.`);
+            progressFeedback.innerText = '⬆️ Drone ascending • Deploying wings...';
+            missionStatusSpan.innerHTML = '🟢 FLIGHT MODE • Wings deployed';
+            droneState = 'flying';
+            droneElement.classList.remove('diving-mode');
+            droneElement.style.left = '30%';
+            droneElement.style.top = '35%';
+            await delay(800);
+            addPilotMessage(`✈️ FLIGHT MODE ACTIVE: ${surfacePollutants.length} surface pollutants visible at ${getDroneLocation()}`);
+            progressFeedback.innerText = '✈️ Flight mode active • Click surface waste to collect';
+            isProcessing = false;
+        }
+    }
+    
+    async function handleSurfaceClean() {
+        if (droneState === 'diving') await toggleToFlying();
+        await autoScanAndClean('surface');
+    }
+    
+    async function handleUnderwaterClean() {
+        if (droneState === 'flying') await toggleToUnderwater();
+        await autoScanAndClean('underwater');
+    }
+    
+    function leaveMission() {
+        if (isProcessing) { addPilotMessage(`⚠️ Cannot abort - mission operation in progress`, 'warning'); return; }
+        addPilotMessage(`🏁 MISSION COMPLETE: Returning to base. Total pollutants collected: ${12 - surfacePollutants.length + 10 - underwaterPollutants.length}`);
+        document.getElementById('missionScreen').classList.add('hidden');
+        document.getElementById('thanksScreen').classList.remove('hidden');
+    }
+    
+    function resetMissionEnvironment() {
+        generatePollutants();
+        droneState = "flying";
+        droneElement.classList.remove('diving-mode');
+        droneElement.style.left = '30%';
+        droneElement.style.top = '35%';
+        isProcessing = false;
+        isFlyingToPollution = false;
+        progressFeedback.innerText = '🌊 System ready • Click pollution or use auto-scan';
+        missionStatusSpan.innerHTML = '🟢 FLIGHT MODE • Wings Deployed';
+        // Clear comms except first message
+        while (commsLog.children.length > 1) {
+            commsLog.removeChild(commsLog.lastChild);
+        }
+        sendDroneStatusUpdate();
+    }
+    
+    function goToMission() {
+        resetMissionEnvironment();
+        document.getElementById('homeScreen').classList.add('hidden');
+        document.getElementById('missionScreen').classList.remove('hidden');
+        document.getElementById('thanksScreen').classList.add('hidden');
+        addPilotMessage(`🚀 MISSION DEPLOYED: Drone airborne. ${surfacePollutants.length} surface + ${underwaterPollutants.length} underwater targets acquired.`);
+    }
+    
+    function goHome() {
+        document.getElementById('thanksScreen').classList.add('hidden');
+        document.getElementById('homeScreen').classList.remove('hidden');
+    }
+    
+    // Slideshow functions
+    function startHomeSlideshow() {
+        const slides = document.querySelectorAll('#homeSlideshow .slide');
+        let current = 0;
+        if (slides.length) slides[0].classList.add('active');
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, 5000);
+    }
+    
+    function startThanksSlideshow() {
+        const slides = document.querySelectorAll('#thanksSlideshow .thanks-slide');
+        let current = 0;
+        if (slides.length) slides[0].classList.add('active');
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, 5000);
+    }
+    
+    // Event listeners
+    document.getElementById('startMissionBtn').addEventListener('click', goToMission);
+    document.getElementById('leaveMissionBtn').addEventListener('click', leaveMission);
+    document.getElementById('homeFromThanksBtn').addEventListener('click', goHome);
+    document.getElementById('cleanSurfaceBtn').addEventListener('click', handleSurfaceClean);
+    document.getElementById('cleanUnderwaterBtn').addEventListener('click', handleUnderwaterClean);
+    
+    // Initialize
+    window.addEventListener('load', () => {
+        generatePollutants();
+        addMarineLife();
+        addBeachPeople();
+        startHomeSlideshow();
+        startThanksSlideshow();
+        document.getElementById('homeScreen').classList.remove('hidden');
+        document.getElementById('missionScreen').classList.add('hidden');
+        document.getElementById('thanksScreen').classList.add('hidden');
+    });
+</script>
+</body>
+</html>
